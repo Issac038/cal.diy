@@ -206,3 +206,36 @@ No significant challenge; pre-investigation of schema requirements prevented the
 **GREEN** — variant tokens locked: `name`, `given-name`, `family-name`.
 
 ---
+
+### Commit 6
+
+**Commit message:**
+`test: verify autocomplete changes across tests and lint`
+
+**Purpose:**
+Run the repository's relevant checks over every file changed by this issue and record the results.
+
+**Files changed:**
+- `DEVELOPMENT_LOG.md` (verification results)
+
+**What changed / Why:**
+Verification-only step. Ran both affected test files together and Biome over all three changed code files. A full `tsc --noEmit -p apps/web` was also started; it exceeds 5 minutes on this monorepo, so it was moved to the background to complete asynchronously (result recorded in Commit 7).
+
+**Technical reasoning:**
+The broken `.husky/pre-commit` hook (yarn unavailable + force-staging of generated files) is deliberately not re-triggered; its two responsibilities are performed manually instead: lint-staged → Biome on changed files, tests → targeted Vitest.
+
+**Challenge encountered:**
+`tsc` for `apps/web` timed out at the 5-minute synchronous command limit (large monorepo type graph).
+
+**How the challenge was solved:**
+Re-launched the same type-check as a background process writing to `/tmp/tsc-web.log` so it can finish while work continues; its outcome will be documented truthfully in the next commit (pass, or pre-existing/unrelated errors).
+
+**Tests/checks performed:**
+- `vitest run` on both test files — **exit 0**: `Test Files 2 passed (2), Tests 5 passed (5)`.
+- `biome check` on all 3 changed code files — **exit 0** (only pre-existing warnings/infos remain, no errors).
+- `tsc --noEmit -p apps/web/tsconfig.json` — running in background.
+
+**Result:**
+All runnable checks green at commit time; type-check result pending in background.
+
+---
