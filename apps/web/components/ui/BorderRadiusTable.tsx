@@ -43,6 +43,17 @@ export const BorderRadiusTable: React.FC<BorderRadiusTableProps> = () => {
         <div
           key={token.name}
           onClick={() => handleCopy(token.className)}
+          // WAI-ARIA button semantics so the card is reachable with Tab and
+          // activates with Enter/Space, matching the existing mouse behavior
+          // (issue #24482). preventDefault stops Space from scrolling the page.
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              handleCopy(token.className);
+            }
+          }}
           className="border-subtle bg-default hover:bg-subtle group relative cursor-pointer overflow-hidden rounded-lg border p-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">

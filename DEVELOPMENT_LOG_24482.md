@@ -139,3 +139,34 @@ Chose native DOM primitives with documented semantics (above) and kept every hel
 - ✓ mouse-click preservation guard
 
 ---
+
+### Commit 3
+
+**Commit message:**
+`fix(web): make BorderRadiusTable cards keyboard accessible`
+
+**Purpose:**
+The core #24482 fix — give each token card WAI-ARIA button semantics and Enter/Space activation.
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.tsx`
+- `DEVELOPMENT_LOG_24482.md`
+
+**What changed / Why:**
+On the card div: `role="button"` (announces the interactive role), `tabIndex={0}` (joins the natural tab order so Tab reaches it), and an `onKeyDown` that copies the card's class on `Enter` or `Space` and calls `preventDefault()` (Space would otherwise scroll the page). The mouse `onClick` is untouched, preserving pointer behavior byte-for-byte.
+
+**Technical reasoning:**
+- A `<div>` wrapper containing block children cannot be replaced by a native `<button>` (button's content model is phrasing content; divs inside buttons are invalid), so `div + role=button + tabIndex + keydown` is the correct WAI-ARIA pattern - and it is the pattern the issue itself suggests.
+- `preventDefault()` on both keys prevents any default scroll/follow behavior during activation.
+- The handler reads `token.className` from the map closure, so each card copies exactly its own class (covered further in Commit 4).
+
+**Challenges encountered:**
+None significant — the fixtures from Commit 2 were designed for this change; no test edits were needed for the suite to turn green.
+
+**Tests performed:**
+`TZ=UTC node node_modules/vitest/vitest.mjs run apps/web/components/ui/BorderRadiusTable.test.tsx`
+
+**Result:**
+**GREEN** — `Test Files 1 passed (1)`, `Tests 5 passed (5)`, exit 0. All four previously red assertions (role/tabIndex, focus landing, Enter copy, Space copy) now pass; the mouse guard still passes.
+
+---
