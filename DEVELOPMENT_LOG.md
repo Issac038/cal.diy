@@ -116,3 +116,33 @@ Switched from `container.querySelector` to `document.querySelector`; production 
 **Still RED, now for the right reason**: the test finds the input via `input[name="name"]` (`toBeInTheDocument` passes) and fails only on `expected null to be 'given-name'` — the autocomplete fix is deliberately deferred to Commit 3.
 
 ---
+
+### Commit 3
+
+**Commit message:**
+`fix(videos): add given-name autocomplete to guest join name input`
+
+**Purpose:**
+The core #18786 fix — declare person-name autocomplete semantics on the guest video-join name input so browsers never fall back to payment-card (Google Pay) heuristics.
+
+**Files changed:**
+- `apps/web/modules/videos/views/videos-single-view.tsx` (added `autoComplete="given-name"` + a why-comment referencing #18786)
+- `DEVELOPMENT_LOG.md`
+
+**What changed / Why:**
+A single attribute on the exact input identified in Commit 2. `given-name` is the token the issue explicitly expects; it scopes the field to person-name identity data.
+
+**Technical reasoning:**
+The `Input` component spreads unknown props onto the underlying `<input>`, so `autoComplete` reaches the DOM unchanged — verified by the DOM-level assertion in the regression test.
+
+**Challenge encountered:**
+No significant challenge in this commit — the investigation in Commits 1-2 had already pinned the exact field and token.
+
+**Tests/checks performed:**
+- `biome check` on the changed file — exit 0.
+- Targeted vitest run — **exit 0**.
+
+**Result:**
+**GREEN** — `Test Files 1 passed (1), Tests 1 passed (1)`. The regression test that reproduced #18786 now passes: the rendered input carries `autocomplete="given-name"`.
+
+---
