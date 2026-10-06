@@ -1,7 +1,6 @@
+import { BorderRadiusTable } from "@calcom/web/components/ui/BorderRadiusTable";
 import { _generateMetadataForStaticPage } from "app/_utils";
 import type { Metadata } from "next";
-
-import { BorderRadiusTable } from "@calcom/web/components/ui/BorderRadiusTable";
 
 export const dynamic = "force-static";
 

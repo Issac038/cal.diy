@@ -232,3 +232,31 @@ Targeted vitest run of the test file.
 **GREEN** — `Tests 10 passed (10)`, exit 0.
 
 ---
+
+### Commit 6
+
+**Commit message:**
+`chore(web): apply biome formatting to BorderRadiusTable changes`
+
+**Purpose:**
+Run the repository's lint/format tooling over every file changed for #24482 and record the results.
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.tsx`, `BorderRadiusTable.test.tsx`, `apps/web/app/design/border-radius/page.tsx` (biome safe fixes)
+- `DEVELOPMENT_LOG_24482.md`
+
+**What changed / Why:**
+`biome check --write` applied import organization and made the React import type-only (`import type React from "react"` — React is referenced only as `React.FC`). Biome exited 0. Remaining diagnostics are **warnings/infos only** (9 warnings, 5 infos): class-ordering suggestions on the restored preview markup and repo-wide style notices — no errors, so nothing fails CI; they were left untouched to avoid churn beyond the issue's scope (the broken pre-commit hook means these checks are run manually, as established for this environment).
+
+**Challenges encountered:**
+None new. The environment limitation from previous work persists: the `.husky/pre-commit` hook cannot run here (yarn unavailable; force-stages unrelated generated files), so `--no-verify` is used after running its equivalents manually.
+
+**Tests performed:**
+1. `biome check --write` on the 3 changed code files — exit 0; then `biome check` re-run — **exit 0**.
+2. Targeted vitest re-run after the biome fixes (files changed, so a re-run was required) — **`Tests 10 passed (10)`, exit 0**.
+3. `tsc --noEmit -p apps/web/tsconfig.json` — launched as a background process (exceeds the synchronous command limit on this monorepo); outcome recorded in Commit 7.
+
+**Result:**
+Lint/format green; tests still green after formatting; type-check pending in background.
+
+---

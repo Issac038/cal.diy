@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-
 import { showToast } from "@calcom/ui/components/toast";
+import type React from "react";
 
 interface BorderRadiusToken {
   name: string;
