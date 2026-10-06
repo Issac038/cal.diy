@@ -38,4 +38,31 @@ describe("LogInOverlay guest name input (issue #18786)", () => {
     expect(nameInput).toBeInTheDocument();
     expect(nameInput?.getAttribute("autocomplete")).toBe("given-name");
   });
+
+  it("keeps person-name autocomplete on the name input when the guest email input is also shown", () => {
+    render(
+      <LogInOverlay
+        isOpen
+        bookingUid="booking-uid"
+        bookingTitle="Quick Meeting"
+        hostName="Host Person"
+        requireEmailForGuests
+        onGuestCredentialsReceived={vi.fn()}
+        meetingUrl="https://example.daily.co/room"
+      />
+    );
+
+    // With requireEmailForGuests the dialog renders two inputs; a positional
+    // "first textbox" lookup would now be ambiguous, so the name input must be
+    // identified by its semantic name attribute and keep its given-name token.
+    expect(document.querySelectorAll("input")).toHaveLength(2);
+
+    const nameInput = document.querySelector('input[name="name"]');
+    const emailInput = document.querySelector('input[type="email"]');
+
+    expect(nameInput).toBeInTheDocument();
+    expect(nameInput?.getAttribute("autocomplete")).toBe("given-name");
+    expect(emailInput).toBeInTheDocument();
+    expect(emailInput).not.toBe(nameInput);
+  });
 });

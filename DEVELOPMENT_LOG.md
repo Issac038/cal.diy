@@ -146,3 +146,33 @@ No significant challenge in this commit — the investigation in Commits 1-2 had
 **GREEN** — `Test Files 1 passed (1), Tests 1 passed (1)`. The regression test that reproduced #18786 now passes: the rendered input carries `autocomplete="given-name"`.
 
 ---
+
+### Commit 4
+
+**Commit message:**
+`test(videos): cover guest name autocomplete when email input is shown`
+
+**Purpose:**
+Regression coverage for the second real variation of the affected dialog: when `requireEmailForGuests` is enabled, the dialog renders a name input *and* an email input. Verify the person-name autocomplete stays on the correct (name) input and that the two fields remain distinguishable.
+
+**Files changed:**
+- `apps/web/modules/videos/__tests__/videos-single-view.test.tsx` (new test case)
+- `DEVELOPMENT_LOG.md`
+
+**What changed / Why:**
+Added a second `it` block rendering `LogInOverlay` with `requireEmailForGuests`, asserting: exactly 2 inputs render, `input[name="name"]` exists with `autocomplete="given-name"`, an `input[type="email"]` exists, and they are distinct elements. This proves the fix targets the name input semantically rather than by position, and that #18786's fix survives the dialog's only configuration variation.
+
+**Technical reasoning:**
+Positional selectors ("first textbox") would become ambiguous in this configuration; semantic selection by `name` attribute is what makes the coverage meaningful.
+
+**Challenge encountered:**
+No significant challenge — the portal-querying lesson from Commit 2 was reused (`document.querySelector`).
+
+**Tests/checks performed:**
+- `biome check --write` on the test file — exit 0.
+- Targeted vitest run — **exit 0**.
+
+**Result:**
+**GREEN** — `Tests 2 passed (2)`.
+
+---
