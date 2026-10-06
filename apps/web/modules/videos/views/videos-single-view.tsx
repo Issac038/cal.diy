@@ -471,6 +471,11 @@ export function LogInOverlay(props: LogInOverlayProps) {
           <div className="flex flex-col gap-3">
             <Input
               type="text"
+              name="name"
+              // Explicit person-name semantics stop the browser from classifying
+              // this field via heuristics, which could otherwise surface names
+              // from payment cards (Google Pay) - see issue #18786.
+              autoComplete="given-name"
               placeholder={t("your_name")}
               className="w-full"
               value={userName}
