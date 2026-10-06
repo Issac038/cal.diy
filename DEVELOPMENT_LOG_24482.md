@@ -260,3 +260,36 @@ None new. The environment limitation from previous work persists: the `.husky/pr
 Lint/format green; tests still green after formatting; type-check pending in background.
 
 ---
+
+### Commit 7
+
+**Commit message:**
+`fix(web): make BorderRadiusTable tokens prop optional for type safety`
+
+**Purpose:**
+Final behavioral/regression verification surfaced two real type errors caused by this change; fix the cause and re-verify everything.
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.tsx` (optional `tokens` prop honored with a default)
+- `DEVELOPMENT_LOG_24482.md`
+
+**What the final verification found:**
+1. Targeted vitest — **10/10 passed, exit 0**; biome — **exit 0**; source check confirms `role="button"`, `tabIndex={0}`, `aria-label`, `onKeyDown` present; git clean, stash intact, `main...HEAD` = exactly 4 files.
+2. Background `tsc --noEmit -p apps/web/tsconfig.json` finished: **599 errors total — but 2 were MINE**: `TS2741: Property 'tokens' is missing in type '{}' but required in type 'BorderRadiusTableProps'` in `page.tsx` and the test file. The historical component declared a *required* `tokens` prop while ignoring it (the old MDX usage was never type-checked). The other **597 errors are pre-existing** — the exact same count measured on an unrelated branch in this environment (missing generated `@calcom/trpc/types/server/*` modules and tRPC router collisions), i.e. environment/dependency issues unrelated to #24482.
+
+**Why the fix is correct:**
+Rather than suppressing the error, the declared API is made real: `tokens?: BorderRadiusToken[]` (optional) with `tokens = defaultTokens` in the destructure — callers can now override the token list, and `<BorderRadiusTable />` type-checks.
+
+**Challenges encountered:**
+A restored component carried a latent type defect invisible in its original home (MDX was outside strict checking); only a full-project tsc caught it.
+
+**How it was solved:**
+Kept the background-tsc habit from earlier work: run the full project check asynchronously, then `grep` the log for this branch's files to separate my errors from the pre-existing 597. Fixed the cause; a verification tsc re-run was launched before committing (result recorded in Commit 8).
+
+**Tests performed (after the fix):**
+Targeted vitest — **10/10, exit 0**; biome on the changed file — **exit 0**.
+
+**Result:**
+All runnable checks green; type-error cause fixed; tsc re-run pending in background.
+
+---

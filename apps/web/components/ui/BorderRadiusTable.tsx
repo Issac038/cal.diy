@@ -10,10 +10,11 @@ interface BorderRadiusToken {
 }
 
 interface BorderRadiusTableProps {
-  tokens: BorderRadiusToken[];
+  /** Override the rendered radius tokens; defaults to the Cal.diy radius scale. */
+  tokens?: BorderRadiusToken[];
 }
 
-const tokens: BorderRadiusToken[] = [
+const defaultTokens: BorderRadiusToken[] = [
   { name: "None", value: "0px", className: "rounded-none" },
   { name: "Small", value: "0.125rem", className: "rounded-sm" },
   { name: "Default", value: "0.25rem", className: "rounded" },
@@ -25,7 +26,7 @@ const tokens: BorderRadiusToken[] = [
   { name: "Full", value: "9999px", className: "rounded-full" },
 ];
 
-export const BorderRadiusTable: React.FC<BorderRadiusTableProps> = () => {
+export const BorderRadiusTable: React.FC<BorderRadiusTableProps> = ({ tokens = defaultTokens }) => {
   const handleCopy = async (value: string) => {
     try {
       await navigator.clipboard.writeText(value);
