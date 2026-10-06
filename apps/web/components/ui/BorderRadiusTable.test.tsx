@@ -102,4 +102,34 @@ describe("BorderRadiusTable keyboard accessibility (issue #24482)", () => {
 
     expect(clipboardWrite).toHaveBeenCalledWith("rounded");
   });
+
+  it("copies each activated card's own class, not another card's", () => {
+    renderTable();
+
+    fireEvent.click(getCard("None"));
+    pressKey(focusCard("Full"), "Enter");
+    pressKey(focusCard("Medium"), " ");
+
+    expect(clipboardWrite).toHaveBeenCalledTimes(3);
+    expect(clipboardWrite).toHaveBeenNthCalledWith(1, "rounded-none");
+    expect(clipboardWrite).toHaveBeenNthCalledWith(2, "rounded-full");
+    expect(clipboardWrite).toHaveBeenNthCalledWith(3, "rounded-md");
+  });
+
+  it("prevents Space from scrolling the page while copying", () => {
+    renderTable();
+
+    const spaceEvent = pressKey(focusCard("XLarge"), " ");
+
+    expect(spaceEvent.defaultPrevented).toBe(true);
+    expect(clipboardWrite).toHaveBeenCalledWith("rounded-xl");
+  });
+
+  it("does not copy on keys other than Enter and Space", () => {
+    renderTable();
+
+    pressKey(focusCard("Small"), "a");
+
+    expect(clipboardWrite).not.toHaveBeenCalled();
+  });
 });

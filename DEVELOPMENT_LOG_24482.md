@@ -170,3 +170,34 @@ None significant — the fixtures from Commit 2 were designed for this change; n
 **GREEN** — `Test Files 1 passed (1)`, `Tests 5 passed (5)`, exit 0. All four previously red assertions (role/tabIndex, focus landing, Enter copy, Space copy) now pass; the mouse guard still passes.
 
 ---
+
+### Commit 4
+
+**Commit message:**
+`test(web): cover per-card copies, Space scroll, and non-activation keys`
+
+**Purpose:**
+Strengthen keyboard interaction coverage across the grid's states/controls so the fix cannot silently regress into wrong-card copies, page scrolling, or over-broad key handling.
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.test.tsx` (3 new tests)
+- `DEVELOPMENT_LOG_24482.md`
+
+**Why the change was necessary:**
+The core tests proved *that* copying works, not *which* class gets copied or what happens around it. A handler that always copied `tokens[0]` would have passed the original suite.
+
+**What the new tests cover:**
+1. **Per-card correctness** — click "None", Enter on "Full", Space on "Medium" in one render; asserts the three calls are `rounded-none`, `rounded-full`, `rounded-md` in order (`toHaveBeenNthCalledWith`).
+2. **Space must not scroll** — asserts the dispatched keydown event is `defaultPrevented` while still copying `rounded-xl`.
+3. **Only Enter/Space activate** — pressing "a" copies nothing (guards against an over-broad handler).
+
+**Challenges encountered:**
+None significant.
+
+**Tests performed:**
+Targeted vitest run of the test file.
+
+**Result:**
+**GREEN** — `Tests 8 passed (8)`, exit 0.
+
+---
