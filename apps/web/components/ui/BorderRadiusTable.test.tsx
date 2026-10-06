@@ -132,4 +132,24 @@ describe("BorderRadiusTable keyboard accessibility (issue #24482)", () => {
 
     expect(clipboardWrite).not.toHaveBeenCalled();
   });
+
+  it("announces an accessible name describing the copy action", () => {
+    renderTable();
+
+    expect(getCard("Medium").getAttribute("aria-label")).toBe("Copy rounded-md");
+    expect(getCard("Full").getAttribute("aria-label")).toBe("Copy rounded-full");
+  });
+
+  it("keeps a visible keyboard focus indicator on the cards", () => {
+    renderTable();
+
+    // jsdom cannot compute Tailwind styles, so the focus ring is locked at the
+    // class level: focus-visible variants render only for keyboard focus.
+    const card = getCard("None");
+
+    expect(card.className).toContain("focus-visible:outline-none");
+    expect(card.className).toContain("focus-visible:ring-2");
+    expect(card.className).toContain("focus-visible:ring-emphasis");
+    expect(card.className).toContain("focus-visible:ring-offset-2");
+  });
 });

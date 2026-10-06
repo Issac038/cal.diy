@@ -48,13 +48,17 @@ export const BorderRadiusTable: React.FC<BorderRadiusTableProps> = () => {
           // (issue #24482). preventDefault stops Space from scrolling the page.
           role="button"
           tabIndex={0}
+          // Announce the action to assistive tech and show a clear keyboard
+          // focus indicator (jsdom cannot compute Tailwind styles, so tests
+          // lock these via the aria-label and focus-visible classes).
+          aria-label={`Copy ${token.className}`}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
               handleCopy(token.className);
             }
           }}
-          className="border-subtle bg-default hover:bg-subtle group relative cursor-pointer overflow-hidden rounded-lg border p-4">
+          className="border-subtle bg-default hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emphasis focus-visible:ring-offset-2 group relative cursor-pointer overflow-hidden rounded-lg border p-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>

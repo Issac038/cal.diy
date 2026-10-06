@@ -201,3 +201,34 @@ Targeted vitest run of the test file.
 **GREEN** — `Tests 8 passed (8)`, exit 0.
 
 ---
+
+### Commit 5
+
+**Commit message:**
+`fix(web): add focus indicator and accessible name to radius cards`
+
+**Purpose:**
+Complete the accessibility semantics required by the keyboard fix: a visible keyboard-focus indicator and an explicit accessible name announcing the copy action.
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.tsx` (`aria-label` + `focus-visible:*` classes)
+- `apps/web/components/ui/BorderRadiusTable.test.tsx` (2 new tests)
+- `DEVELOPMENT_LOG_24482.md`
+
+**Why the change was necessary:**
+`tabIndex` alone made cards focusable but with only the browser's default outline; `role="button"` alone would announce the concatenated card text as its name. The repo's established pattern (Switch, Checkbox, dialog inputs) is `focus-visible:outline-none focus-visible:ring-2 ...` with the `ring-emphasis` color, and an explicit `aria-label` gives assistive tech a short, action-oriented name ("Copy rounded-md").
+
+**Technical reasoning:**
+- `focus-visible:` variants render only for keyboard focus, so mouse users see no visual change (pointer behavior preserved).
+- jsdom does not compute Tailwind styles, so the focus-ring test locks the classes that produce the ring; the aria-label is asserted exactly.
+
+**Challenges encountered:**
+Minor: an initial draft of the class-level assertion contained a nonsense negative check; replaced it with positive assertions of all four classes composing the focus ring before committing.
+
+**Tests performed:**
+Targeted vitest run of the test file.
+
+**Result:**
+**GREEN** — `Tests 10 passed (10)`, exit 0.
+
+---
