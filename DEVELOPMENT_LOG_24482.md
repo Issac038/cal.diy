@@ -100,3 +100,42 @@ Without the component in the tree there is nothing to fix or test; the issue's r
 This exactly reproduces issue #24482: keyboard interaction absent, mouse interaction working.
 
 ---
+
+### Commit 2
+
+**Commit message:**
+`test(web): add keyboard-testing fixtures for BorderRadiusTable`
+
+**Purpose:**
+Build the test scaffolding needed to accurately simulate keyboard interaction in jsdom, and add a test that reproduces the "Tab skips the cards" behavior itself (not just its consequences).
+
+**Files changed:**
+- `apps/web/components/ui/BorderRadiusTable.test.tsx` (helpers + new focus test)
+- `DEVELOPMENT_LOG_24482.md`
+
+**Why the change was necessary:**
+The first draft had the clipboard fixture and card lookup inlined and could only infer the focus problem from missing attributes. Dedicated helpers make the keyboard simulation faithful and the assertions reusable across commits 3-7.
+
+**Technical reasoning:**
+- `setupClipboardMock()` — jsdom ships no `navigator.clipboard`; a fresh `vi.fn()` per test prevents cross-test leakage.
+- `getCard()` uses `.closest(".cursor-pointer")` because the pre-fix card has no ARIA role; the helper therefore works before *and* after the fix (no test rewrite needed when roles appear).
+- `focusCard()` relies on jsdom's real focusability rules: `div.focus()` without `tabindex` is a no-op, so the new test is a direct reproduction of "Tab cannot reach the cards".
+- `pressKey()` dispatches a **cancelable, bubbling** `KeyboardEvent` and returns it, so later commits can assert `defaultPrevented` (Space must not scroll).
+- `renderTable()` keeps renders uniform.
+
+**Challenges encountered:**
+jsdom has no keyboard synthesis and no Tab traversal (and `@testing-library/user-event` is not a dependency of this repo), so focus + key semantics must be emulated with native `focus()`/`KeyboardEvent` — which is exactly why the helpers were built around those primitives rather than higher-level APIs that are unavailable here.
+
+**How the challenge was solved:**
+Chose native DOM primitives with documented semantics (above) and kept every helper dependency-free, matching the repo's existing fireEvent-based test style.
+
+**Tests performed:**
+`TZ=UTC node node_modules/vitest/vitest.mjs run apps/web/components/ui/BorderRadiusTable.test.tsx`
+
+**Result:**
+**Still RED, deeper coverage** — `Tests 4 failed | 1 passed (5)`, exit 1:
+- ✗ role/tabindex, ✗ Enter copy, ✗ Space copy
+- ✗ **new**: `lets keyboard focus land on a card` (activeElement stays `<body>` — the Tab-skip reproduced directly)
+- ✓ mouse-click preservation guard
+
+---

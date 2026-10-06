@@ -10,6 +10,20 @@ import { BorderRadiusTable } from "./BorderRadiusTable";
 
 const clipboardWrite = vi.fn().mockResolvedValue(undefined);
 
+/** jsdom has no navigator.clipboard, so install a fresh spy before each test. */
+const setupClipboardMock = (): void => {
+  clipboardWrite.mockClear();
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: clipboardWrite },
+  });
+};
+
+/**
+ * Cards are plain divs before the fix (no role yet), so they are addressed via
+ * their cursor-pointer wrapper class instead of an ARIA query that would only
+ * work after the fix. This keeps the helper valid across the red -> green runs.
+ */
 const getCard = (tokenName: string): HTMLElement => {
   const label = screen.getByText(tokenName);
   const card = label.closest(".cursor-pointer");
@@ -19,17 +33,37 @@ const getCard = (tokenName: string): HTMLElement => {
   return card as HTMLElement;
 };
 
+/**
+ * Moves focus onto the card the way Tab would. jsdom only focuses truly
+ * focusable elements, so this is a no-op while the card lacks tabindex -
+ * exactly the reported "Tab skips the cards" behavior.
+ */
+const focusCard = (tokenName: string): HTMLElement => {
+  const card = getCard(tokenName);
+  card.focus();
+  return card;
+};
+
+/**
+ * Dispatches a cancelable, bubbling keydown like a real keyboard would.
+ * The returned event lets tests assert defaultPrevented (Space must not
+ * scroll the page while copying).
+ */
+const pressKey = (element: Element, key: string): KeyboardEvent => {
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  fireEvent(element, event);
+  return event;
+};
+
+const renderTable = (): ReturnType<typeof render> => render(<BorderRadiusTable />);
+
 describe("BorderRadiusTable keyboard accessibility (issue #24482)", () => {
   beforeEach(() => {
-    clipboardWrite.mockClear();
-    Object.defineProperty(navigator, "clipboard", {
-      configurable: true,
-      value: { writeText: clipboardWrite },
-    });
+    setupClipboardMock();
   });
 
   it("exposes each token card as a focusable button", () => {
-    render(<BorderRadiusTable />);
+    renderTable();
 
     const card = getCard("None");
 
@@ -37,24 +71,32 @@ describe("BorderRadiusTable keyboard accessibility (issue #24482)", () => {
     expect(card.getAttribute("tabindex")).toBe("0");
   });
 
-  it("copies the Tailwind class when Enter is pressed on a card", () => {
-    render(<BorderRadiusTable />);
+  it("lets keyboard focus land on a card", () => {
+    renderTable();
 
-    fireEvent.keyDown(getCard("Small"), { key: "Enter" });
+    const card = focusCard("None");
+
+    expect(document.activeElement).toBe(card);
+  });
+
+  it("copies the Tailwind class when Enter is pressed on a card", () => {
+    renderTable();
+
+    pressKey(focusCard("Small"), "Enter");
 
     expect(clipboardWrite).toHaveBeenCalledWith("rounded-sm");
   });
 
   it("copies the Tailwind class when Space is pressed on a card", () => {
-    render(<BorderRadiusTable />);
+    renderTable();
 
-    fireEvent.keyDown(getCard("Large"), { key: " " });
+    pressKey(focusCard("Large"), " ");
 
     expect(clipboardWrite).toHaveBeenCalledWith("rounded-lg");
   });
 
   it("keeps the existing mouse-click copy behavior intact", () => {
-    render(<BorderRadiusTable />);
+    renderTable();
 
     fireEvent.click(getCard("Default"));
 
