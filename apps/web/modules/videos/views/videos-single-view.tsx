@@ -471,6 +471,7 @@ export function LogInOverlay(props: LogInOverlayProps) {
           <div className="flex flex-col gap-3">
             <Input
               type="text"
+              name="name"
               placeholder={t("your_name")}
               className="w-full"
               value={userName}

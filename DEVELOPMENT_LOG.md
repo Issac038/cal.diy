@@ -82,3 +82,37 @@ The issue's expected result is "The regular given-name autocomplete should be pr
 - Note: a browser-level reproduction (Chrome autofill dropdown sourced from Google Pay cards) cannot be automated here; the DOM attribute assertion is the strongest available automated proxy and is what the fix ultimately controls.
 
 ---
+
+### Commit 2
+
+**Commit message:**
+`fix(videos): give guest name input a semantic name attribute`
+
+**Purpose:**
+Make the affected input explicitly addressable as a person-name field (`name="name"`, consistent with the booking form's name field) and point the regression test at that exact field instead of "the only textbox", so the fix in Commit 3 is applied to and verified on the right input.
+
+**Files changed:**
+- `apps/web/modules/videos/views/videos-single-view.tsx` (added `name="name"` to the join-dialog name `Input`)
+- `apps/web/modules/videos/__tests__/videos-single-view.test.tsx` (select via `document.querySelector('input[name="name"]')`)
+- `DEVELOPMENT_LOG.md`
+
+**What changed / Why:**
+The input previously had no identifying attributes at all. A semantic `name` attribute makes the field identifiable to tests, browser tooling, and any future form wrapper. The test now asserts on the specifically identified field, keeping it valid when the dialog also renders the optional email input.
+
+**Technical reasoning:**
+Radix `Dialog` portals its content to `document.body`, so the query must run against `document`, not the RTL render container.
+
+**Challenge encountered:**
+First test run after the change failed with `Received value must be an HTMLElement... Received has value: null` — the selector found nothing because the dialog content lives outside the render container (portal).
+
+**How the challenge was solved:**
+Switched from `container.querySelector` to `document.querySelector`; production edit verified present via search.
+
+**Tests/checks performed:**
+- `biome check --write` on both changed files — exit 0 (remaining diagnostics are pre-existing file-wide warnings/infos, no errors).
+- Targeted vitest run — exit 1 (captured via `PIPESTATUS[0]`).
+
+**Result:**
+**Still RED, now for the right reason**: the test finds the input via `input[name="name"]` (`toBeInTheDocument` passes) and fails only on `expected null to be 'given-name'` — the autocomplete fix is deliberately deferred to Commit 3.
+
+---

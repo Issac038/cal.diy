@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LogInOverlay } from "../views/videos-single-view";
 
@@ -29,10 +29,13 @@ describe("LogInOverlay guest name input (issue #18786)", () => {
       />
     );
 
-    // requireEmailForGuests defaults to false, so the dialog exposes exactly one textbox: the name input
-    const nameInput = screen.getByRole("textbox");
+    // Address the affected field via its semantic `name` attribute rather than by
+    // position, so the assertion keeps targeting the name input even when the
+    // dialog also renders the optional guest email input. Radix portals the dialog
+    // to document.body, so query the document rather than the render container.
+    const nameInput = document.querySelector('input[name="name"]');
 
     expect(nameInput).toBeInTheDocument();
-    expect(nameInput.getAttribute("autocomplete")).toBe("given-name");
+    expect(nameInput?.getAttribute("autocomplete")).toBe("given-name");
   });
 });
