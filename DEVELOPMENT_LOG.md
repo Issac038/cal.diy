@@ -239,3 +239,36 @@ Re-launched the same type-check as a background process writing to `/tmp/tsc-web
 All runnable checks green at commit time; type-check result pending in background.
 
 ---
+
+### Commit 7
+
+**Commit message:**
+`test: final behavioral verification for #18786`
+
+**Purpose:**
+Final end-to-end verification of the issue before documentation sign-off.
+
+**Files changed:**
+- `DEVELOPMENT_LOG.md` (verification results)
+
+**What changed / Why:**
+Verification-only commit. Confirmed every item from the issue checklist against the actual artifacts:
+1. **Affected input renders**: source check shows `name="name"` (line 474) and `autoComplete="given-name"` (line 478) on the guest join name input in `videos-single-view.tsx`.
+2. **Regression test passes**: `Test Files 2 passed (2), Tests 5 passed (5)`, vitest exit 0 — covering both dialog configurations and the booking-form name variants.
+3. **Biome**: exit 0 on all 3 changed code files.
+4. **No unrelated files staged**: `git status` shows only untracked `.freebuff/` (never staged); `git diff main...HEAD --stat` shows exactly 4 issue-related files.
+5. **Stash untouched**: `stash@{0}: On main: pre-existing local changes before issue 18786` still present.
+
+**Technical reasoning:**
+Browser autofill dropdowns (Chrome/Google Pay) cannot be automated in CI, so final verification combines DOM-level attribute assertions (what the browser actually consumes), source inspection, and automated suites; a true Chrome-profile manual check is documented as a known limitation.
+
+**Challenge encountered:**
+No new issue-related problems were discovered in final verification; the background `tsc` run was still in progress.
+
+**Tests/checks performed:**
+Targeted vitest (5 tests), Biome (3 files), source grep, git status/stash/diff review — all as listed above.
+
+**Result:**
+**All green** — no production fix needed in this commit.
+
+---
