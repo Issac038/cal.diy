@@ -176,3 +176,33 @@ No significant challenge — the portal-querying lesson from Commit 2 was reused
 **GREEN** — `Tests 2 passed (2)`.
 
 ---
+
+### Commit 5
+
+**Commit message:**
+`test(form-builder): lock name-variant autocomplete tokens`
+
+**Purpose:**
+Audit the booking form's existing name autocomplete semantics (the #24422 partial fix) and lock them with focused tests, proving the #18786 fix does not conflict with existing name-field semantics: full name → `name`, first name → `given-name`, last name → `family-name`. Test-only — no production behavior changed.
+
+**Files changed:**
+- `apps/web/modules/form-builder/components/FormBuilderField.test.tsx` (2 new tests)
+- `DEVELOPMENT_LOG.md`
+
+**What changed / Why:**
+Before writing tests, verified the schema (`variant: z.string().optional()` exists on `fieldSchema`) and that `name` is not in `fieldsThatSupportLabelAsSafeHtml` (so no `labelAsSafeHtml` is required). Then rendered the `name` field in both variants and asserted the autocomplete token of each rendered input.
+
+**Technical reasoning:**
+The `name` booking field resolves its variants from `fieldTypesConfigMap` defaults when the field carries no stored `variantsConfig`, so a plain `{ name: "name", type: "name" }` field exercises the real production path; inputs are addressed by their `name` attributes (`name`/`firstName`/`lastName`).
+
+**Challenge encountered:**
+No significant challenge; pre-investigation of schema requirements prevented the likely `labelAsSafeHtml` throw and the missing-`variant`-type errors.
+
+**Tests/checks performed:**
+- `biome check --write` on the test file — exit 0.
+- Targeted vitest run — **exit 0**: `Tests 3 passed (3)` (1 pre-existing + 2 new).
+
+**Result:**
+**GREEN** — variant tokens locked: `name`, `given-name`, `family-name`.
+
+---
